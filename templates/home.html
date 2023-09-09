@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home Page</title>
+    <style>
+        body {
+            background-color: darkcyan;
+        }
+    </style>
+</head>
+<body>
+Cookie Result - {{ test }}clear
+<br>
+It's Template! Now time is {{ time }}!
+{% for i in lst %}
+<br>
+{{ i }}
+{% endblock %}
+</body>
+</html>

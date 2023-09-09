@@ -1,53 +1,27 @@
-import re
-from typing import List, Type
-from CCDCServer.urls import Url
-from CCDCServer.exceptions import NotFound, NotAllowed
 from CCDCServer.view import View
+from CCDCServer.exceptions import NotFound, NotAllowed
+from CCDCServer.urls import Url
 from CCDCServer.request import Request
 from CCDCServer.response import Response
-from CCDCServer.middleware import BaseMiddleware
+from typing import Type, List
 from pprint import pprint
+import re
 
 
-class CCDCServer:
-    """
-    Этот класс представляет серверный объект CCDCServer.
-    В данном экземпляре класса могут быть доступны только эти атрибуты,
-    если попытаться обратиться к другим атрибутам, то будет выведена ошибка,
-    а также это экономит память, т.к. Python не создает словарь для хранения
-    атрибутов объекта.
-    """
-    __slots__ = ('urls', 'settings', 'middlewares')
+class Redirect:
+    __slots__ = ('urls', 'url', 'settings')
 
-    def __init__(self, urls: List[Url], settings: dict, middlewares: List[Type[BaseMiddleware]]):
-        """
-        Конструктор класса для инициализации объекта CCDCServer.
-
-        :param urls: Список URL, где каждый элемент списка должен быть типа Url.
-        :param settings: Словарь с настройками сервера.
-        :param middlewares: Список middleware, являющихся подклассами BaseMiddleware.
-        """
-
+    def __init__(self, urls: List[Url], url: str, settings: dict):
         self.urls = urls
+        self.url = url
         self.settings = settings
-        self.middlewares = middlewares
+        print(self.url)
 
-    def __call__(self, environ: dict, start_response):
-        """
-        Метод __call__ в Python позволяет сделать экземпляр класса "вызываемым" (callable), то есть,
-        вы можете вызывать экземпляр этого класса как функцию.
-
-        :param environ: Это словарь, содержащий информацию о текущем запросе.
-        :param start_response: Функция обратного вызова для начала ответа сервера.
-        :return: Возвращает тело ответа, которое будет передано пользователю.
-        """
-
-        # pprint(environ)
+    def invoke(self, environ: dict, start_response):
+        pprint(environ)
         view = self._get_view(environ)
         request = self._get_request(environ)
-        self._apply_middleware_to_request(request)
         response = self._get_response(environ, view, request)
-        self._apply_middleware_to_response(response)
         start_response(str(response.status_code), response.headers.items())
 
         return iter([response.body])
@@ -89,7 +63,7 @@ class CCDCServer:
         """
 
         raw_url = environ['PATH_INFO']
-        view = self._find_view(raw_url)()
+        view = self._find_view(self.url)()
         return view
 
     def _get_request(self, environ: dict):
@@ -123,27 +97,3 @@ class CCDCServer:
         # Функция getattr возвращает значение атрибута с указанным именем (attr)
         # у объекта (obj)
         return getattr(view, method)(request)
-
-    def _apply_middleware_to_request(self, request: Request):
-        """
-        Метод применяет middleware к объекту запроса. Он проходит по списку middleware
-        и вызывает метод to_request для каждого из них.
-
-        :param request: Объект запроса (Request).
-        :return: Ничего не возвращает.
-        """
-
-        for i in self.middlewares:
-            i().to_request(request)
-
-    def _apply_middleware_to_response(self, response: Response):
-        """
-        Метод применяет middleware к объекту ответа. Он проходит по списку middleware
-        и вызывает метод to_response для каждого из них.
-
-        :param response: Объект ответа (Response).
-        :return: Ничего не возвращает.
-        """
-
-        for i in self.middlewares:
-            i().to_response(response)

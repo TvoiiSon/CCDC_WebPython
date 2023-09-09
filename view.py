@@ -2,12 +2,16 @@ from datetime import datetime
 from CCDCServer.view import View
 from CCDCServer.request import Request
 from CCDCServer.response import Response
-from CCDCServer.urls import Url
 from CCDCServer.template_engine import build_template
+from CCDCServer.redirect import Redirect
 
 
 class HomePage(View):
     def get(self, request, *args, **kwargs):
+        # if not request.session_id:
+        #     from setting import settings, urlpatterns
+        #     redirect = Redirect(urls=urlpatterns, url='/login', settings=settings)
+        #     redirect.invoke()
         body = build_template(
             request,
             {'time': str(datetime.now()), 'lst': [1, 2, 3], 'test': request.session_id},

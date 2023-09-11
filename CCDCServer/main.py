@@ -6,7 +6,7 @@ from CCDCServer.view import View
 from CCDCServer.request import Request
 from CCDCServer.response import Response
 from CCDCServer.middleware import BaseMiddleware
-from pprint import pprint
+from CCDCServer.storage_environ import EnvironStorage
 
 
 class CCDCServer:
@@ -42,13 +42,15 @@ class CCDCServer:
         :return: Возвращает тело ответа, которое будет передано пользователю.
         """
 
-        # pprint(environ)
+        EnvironStorage.set_environ(environ)
+        EnvironStorage.set_start_response(start_response)
         view = self._get_view(environ)
         request = self._get_request(environ)
         self._apply_middleware_to_request(request)
         response = self._get_response(environ, view, request)
         self._apply_middleware_to_response(response)
         start_response(str(response.status_code), response.headers.items())
+        print(environ)
 
         return iter([response.body])
 

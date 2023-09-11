@@ -50,7 +50,6 @@ class CCDCServer:
         response = self._get_response(environ, view, request)
         self._apply_middleware_to_response(response)
         start_response(str(response.status_code), response.headers.items())
-        print(environ)
 
         return iter([response.body])
 

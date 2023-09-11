@@ -9,14 +9,7 @@ from CCDCServer.redirect import Redirect
 class HomePage(View):
     def get(self, request, *args, **kwargs):
         if not request.session_id:
-            print()
-            # from setting import settings, urlpatterns
-            # request_data = {
-            #     'urls': urlpatterns,
-            #     'url': '^/login$',
-            #     'settings': settings
-            # }
-            # Redirect(**request_data)
+            return Redirect(request, location="http://127.0.0.1:8000/login")
 
         body = build_template(
             request,

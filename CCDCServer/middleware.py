@@ -62,9 +62,10 @@ class Session(BaseMiddleware):
         """
 
         if not response.request.extra.get('session_id'):
-            response.update_headers(
-                {'Set-Cookie': f'session_id={uuid4()}'}
-            )
+            pass
+            # response.update_headers(
+            #     {'Set-Cookie': f'session_id={uuid4()}'}
+            # )
 
 
 # Список middlewares, который включает в себя только один промежуточный слой - Session.

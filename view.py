@@ -9,7 +9,7 @@ from CCDCServer.redirect import Redirect
 class HomePage(View):
     def get(self, request, *args, **kwargs):
         if not request.session_id:
-            return Redirect(request, location="http://127.0.0.1:8000/login")
+            return Redirect(request, location="/login")
 
         body = build_template(
             request,
@@ -23,7 +23,7 @@ class LoginPage(View):
     def get(self, request: Request, *args, **kwargs) -> Response:
         body = build_template(
             request,
-            {'error_cookie': 'Auth!'},
+            {'xcv': 'Auth!'},
             'login.page.html'
         )
 

@@ -1,6 +1,3 @@
-from pprint import pprint
-
-
 class EnvironStorage:
     _environ = None
     _start_response = None

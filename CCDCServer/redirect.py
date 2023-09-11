@@ -1,5 +1,6 @@
 from CCDCServer.request import Request
 from CCDCServer.response import Response
+from CCDCServer.storage_environ import EnvironStorage
 
 
 class Redirect(Response):
@@ -24,5 +25,7 @@ class Redirect(Response):
         """
 
         super().__init__(request)
+        env = EnvironStorage().get_environ()
+        loc_env = env['HTTP_HOST']
         self.status_code = 302  # Код состояния для переадресации (Found)
-        self.headers['Location'] = location
+        self.headers['Location'] = f"http://{loc_env}{location}"

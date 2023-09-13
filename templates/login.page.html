@@ -6,6 +6,9 @@
 </head>
 <body>
 {{ xcv }}
+{% for user in users %}
+    <p>{{ name }}, {{ age }}</p>
+{% endblock %}
 <form action="" method="post">
     <p><b>Enter Your Login</b></p>
     <p><input type="text" name="login" placeholder="Login" /></p>

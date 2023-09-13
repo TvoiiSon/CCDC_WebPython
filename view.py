@@ -23,7 +23,11 @@ class LoginPage(View):
     def get(self, request: Request, *args, **kwargs) -> Response:
         body = build_template(
             request,
-            {'xcv': 'Auth!'},
+            {'xcv': 'Auth!', 'users': [
+                        {'name': 'Иван', 'age': 25},
+                        {'name': 'Мария', 'age': 30},
+                        {'name': 'Петр', 'age': 22},
+                    ]},
             'login.page.html'
         )
 

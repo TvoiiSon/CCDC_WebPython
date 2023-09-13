@@ -3,11 +3,14 @@ import re
 from CCDCServer.request import Request
 
 
+VARIABLE_PATTERN = re.compile(r'{{ (?P<variable>[a-zA-Z\'"\[\].]+) }}')
+
 FOR_BLOCK_PATTERN = re.compile(r'{% for (?P<variable>[a-zA-Z]+) in '
                                r'(?P<seq>[a-zA-Z]+) %}(?P<content>[\S\s]+)'
                                r'(?={% endblock %}){% endblock %}')
 
-VARIABLE_PATTERN = re.compile(r'{{ (?P<variable>[a-zA-Z]+) }}')
+IF_BLOCK_PATTERN = re.compile(r'{% if (?P<condition>[^%]+) %}(?P<content>[\S\s]+)'
+                              r'(?:{% else %}(?P<else_content>[\S\s]+))?{% endif %}')
 
 
 class Engine:
@@ -69,12 +72,52 @@ class Engine:
             return raw_template
 
         build_for_block = ''
-        for i in context.get(for_block.group('seq'), []):
-            build_for_block += self._build_block(
-                {**context, for_block.group('variable'): i},
-                for_block.group('content')
-            )
+        for item in context.get(for_block.group('seq'), []):
+            if isinstance(item, dict):
+                # Если элемент списка - это словарь, заменяем обращения к ключам с помощью []
+                updated_context = {**context, **item}  # Обновляем контекст, добавляя элемент словаря
+                build_for_block += self._build_block(updated_context, for_block.group('content'))
+            else:
+                # Если элемент списка не является словарем, оставляем его без изменений
+                build_for_block += self._build_block(
+                    {**context, for_block.group('variable'): item},
+                    for_block.group('content')
+                )
         return FOR_BLOCK_PATTERN.sub(build_for_block, raw_template)
+
+    @staticmethod
+    def _build_if_block(context: dict, raw_template: str) -> str:
+        """
+        Метод для обработки блоков условия "if" и "else" в шаблоне.
+
+        :param context: Контекст
+        :param raw_template: Исходный текст шаблона
+        :return: Шаблон с обработанными блоками условия "if" и "else"
+        """
+
+        def evaluate_condition(cond):
+            try:
+                return eval(cond, {}, context)
+            except Exception as e:
+                raise Exception(f"Error evaluating condition: {str(e)}")
+
+        if_block = IF_BLOCK_PATTERN.search(raw_template)
+        while if_block is not None:
+            condition = if_block.group('condition')
+            content = if_block.group('content')
+            else_content = if_block.group('else_content')
+
+            if evaluate_condition(condition):
+                replacement = content
+            elif else_content:
+                replacement = else_content
+            else:
+                replacement = ''
+
+            raw_template = IF_BLOCK_PATTERN.sub(replacement, raw_template, count=1)
+            if_block = IF_BLOCK_PATTERN.search(raw_template)
+
+        return raw_template
 
     def build(self, context: dict, template_name: str) -> str:
         """
@@ -87,6 +130,7 @@ class Engine:
 
         raw_template = self._get_template_as_string(template_name)
         raw_template = self._build_for_block(context, raw_template)
+        raw_template = self._build_if_block(context, raw_template)
 
         return self._build_block(context, raw_template)
 

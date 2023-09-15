@@ -2,7 +2,7 @@ from datetime import datetime
 from CCDCServer.view import View
 from CCDCServer.request import Request
 from CCDCServer.response import Response
-from CCDCServer.template_engine import build_template
+from CCDCTemplateEngine.build import CCDC_TemplateBuild
 from CCDCServer.redirect import Redirect
 
 
@@ -11,7 +11,7 @@ class HomePage(View):
         if not request.session_id:
             return Redirect(request, location="/login")
 
-        body = build_template(
+        body = CCDC_TemplateBuild().build_template(
             request,
             {'time': str(datetime.now()), 'lst': [1, 2, 3], 'test': request.session_id},
             'home.html'

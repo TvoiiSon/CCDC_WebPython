@@ -1,18 +1,16 @@
 from CCDCServer.request import Request
-from CCDCTemplateEngine.main import CCDC_TemplateEngine
+from CCDCTemplateEngine.main import CCDCTemplateEngine
 
 
-class CCDC_TemplateBuild:
-    def __init__(self, context: dict):
-        self.context = context
-
-    def build_template(self, request: Request, template_name: str) -> str:
+class CCDCTemplateBuild:
+    @staticmethod
+    def build_template(request: Request, template_name: str, context: dict) -> str:
         """
         Функция для построения шаблона на основе запроса, контекста и имени шаблона.
 
-        :param self:
         :param request: Объект запроса
         :param template_name: Имя шаблона
+        :param context: Контекст
         :return: Готовый шаблон как строка
         """
 
@@ -20,10 +18,11 @@ class CCDC_TemplateBuild:
         assert request.settings.get('BASE_DIR')
         assert request.settings.get('TEMPLATE_DIR_NAME')
         # Создание экземпляра класса Engine с указанием базового каталога и имени каталога с шаблонами
-        engine = CCDC_TemplateEngine(
+        engine = CCDCTemplateEngine(
             request.settings.get('BASE_DIR'),
-            request.settings.get('TEMPLATE_DIR_NAME')
+            request.settings.get('TEMPLATE_DIR_NAME'),
+            context
         )
 
         # Вызов метода build у Engine для построения шаблона и возврата результата
-        return engine.build(self.context, template_name)
+        return engine.render_template(template_name)

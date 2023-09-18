@@ -1,17 +1,10 @@
 import os
 import re
-
-VARIABLE_PATTERN = re.compile(r'{{ (?P<variable>[a-zA-Z\'"\[\].]+) }}')
-
-FOR_BLOCK_PATTERN = re.compile(r'{% for (?P<variable>[a-zA-Z]+) in '
-                               r'(?P<seq>[a-zA-Z]+) %}(?P<content>[\S\s]+)'
-                               r'(?={% endblock %}){% endblock %}')
-
-IF_BLOCK_PATTERN = re.compile(r'{% if (?P<condition>[^%]+) %}(?P<content>[\S\s]+)'
-                              r'(?:{% else %}(?P<else_content>[\S\s]+))?{% endif %}')
+import ast
+from pprint import pprint
 
 
-class CCDC_TemplateEngine:
+class CCDCTemplateEngine:
     def __init__(self, base_dir: str, template_dir: str, context: dict):
         """
         Конструктор класса Engine.
@@ -23,17 +16,6 @@ class CCDC_TemplateEngine:
 
         self.template_dir = os.path.join(base_dir, template_dir)
         self.context = context
-
-    def _add_value_to_global_variable(self, key, value):
-        if key in self.context:
-            # Если ключ уже существует в словаре, добавляем значение в множество
-            self.context[key].add(value)
-        else:
-            # Если ключа нет, создаем новую запись в словаре с ключом и множеством значений
-            self.context[key] = {value}
-
-    def _get_value_to_global_context(self):
-        return self.context
 
     def _get_template_as_string(self, template_name: str):
         """
@@ -49,95 +31,102 @@ class CCDC_TemplateEngine:
         with open(template_path) as f:
             return f.read()
 
-    def _build_block(self, raw_template_block: str) -> str:
-        """
-        Статический метод для замены переменных в блоке шаблона на их значения из контекста.
+    def render_template(self, template_name: str):
+        template_content = self._get_template_as_string(template_name)
+        rendered_template = self._render_variables(template_content)
+        rendered_template = self._render_if_else(rendered_template)
+        rendered_template = self._render_for(rendered_template)
+        return rendered_template
 
-        :param raw_template_block: Блок шаблона с переменными
-        :return: Блок шаблона с замененными переменными из контекста
-        """
+    def _render_variables(self, template_content: str):
+        def replace_variable(match):
+            variable_expression = match.group(0)
+            variable_name = match.group(1)
 
-        used_vars = VARIABLE_PATTERN.findall(raw_template_block)
-        if used_vars is None:
-            return raw_template_block
+            # Разбиваем переменную на части, разделенные точкой
+            variable_parts = variable_name.split('.')
+            current_value = self.context
 
-        for var in used_vars:
-            var_in_template = '{{ %s }}' % var
-            raw_template_block = re.sub(var_in_template, str(self.context.get(var, '')), raw_template_block)
-            print(var, str(self.context.get(var, '')))
-            self._add_value_to_global_variable(var, str(self.context.get(var, '')))
+            # Перебираем части переменной и обращаемся к ним в контексте
+            for part in variable_parts:
+                if part in current_value:
+                    current_value = current_value[part]
+                else:
+                    # Если какая-то часть не найдена в контексте, оставляем переменную без замены
+                    return variable_expression
 
-        test = self._get_value_to_global_context()
-        print(test)
-        return raw_template_block
+            # Если все части найдены, возвращаем значение переменной
+            return str(current_value)
 
-    def _build_for_block(self, raw_template: str) -> str:
-        """
-        Метод для обработки блоков цикла "for" в шаблоне.
+        pattern = r'{{\s*([\w_.]+)\s*}}'  # Обновленное регулярное выражение для поддержки точечной нотации
+        rendered_template = re.sub(pattern, replace_variable, template_content)
+        return rendered_template
 
-        :param raw_template: Исходный текст шаблона
-        :return: Шаблон с обработанными блоками цикла "for"
-        """
+    def _render_if_else(self, template_content: str):
+        pattern = r'{% if (.*?) %}(.*?){% else %}(.*?){% endif %}'
 
-        for_block = FOR_BLOCK_PATTERN.search(raw_template)
-        if for_block is None:
-            return raw_template
-
-        build_for_block = ''
-        for item in self.context.get(for_block.group('seq'), []):
-            if isinstance(item, dict):
-                # Если элемент списка - это словарь, заменяем обращения к ключам с помощью []
-                updated_context = {**self.context, **item}  # Обновляем контекст, добавляя элемент словаря
-                build_for_block += self._build_block(updated_context)
-            else:
-                # Если элемент списка не является словарем, оставляем его без изменений
-                build_for_block += self._build_block(
-                    for_block.group('content')
-                )
-        return FOR_BLOCK_PATTERN.sub(build_for_block, raw_template)
-
-    def _build_if_block(self, raw_template: str) -> str:
-        """
-        Метод для обработки блоков условия "if" и "else" в шаблоне.
-
-        :param raw_template: Исходный текст шаблона
-        :return: Шаблон с обработанными блоками условия "if" и "else"
-        """
-
-        def evaluate_condition(cond):
+        def evaluate_expression(expression):
             try:
-                return eval(cond, {}, self.context)
+                parsed_expr = ast.parse(expression, mode='eval')
+                evaluated_result = eval(compile(parsed_expr, filename='<string>', mode='eval'), self.context)
+                return evaluated_result
             except Exception as e:
-                raise Exception(f"Error evaluating condition: {str(e)}")
+                print(e)
+                return None
 
-        if_block = IF_BLOCK_PATTERN.search(raw_template)
-        while if_block is not None:
-            condition = if_block.group('condition')
-            content = if_block.group('content')
-            else_content = if_block.group('else_content')
+        def replace_if_else(match):
+            if_expression = match.group(1)
+            if_body = match.group(2)
+            else_body = match.group(3)
 
-            if evaluate_condition(condition):
-                replacement = content
-            elif else_content:
-                replacement = else_content
+            if_result = evaluate_expression(if_expression)
+
+            if if_result:
+                return if_body
             else:
-                replacement = ''
+                return else_body
 
-            raw_template = IF_BLOCK_PATTERN.sub(replacement, raw_template, count=1)
-            if_block = IF_BLOCK_PATTERN.search(raw_template)
+        rendered_template = re.sub(pattern, replace_if_else, template_content, flags=re.DOTALL)
+        return rendered_template
 
-        return raw_template
+    def _render_for(self, template_content: str):
+        pattern = r'{% for (\w+) in ([\w.]+) %}(.*?){% endfor %}'
 
-    def build(self, template_name: str) -> str:
-        """
-        Метод для построения конечного шаблона на основе контекста и имени шаблона.
+        def evaluate_expression(expression):
+            try:
+                parsed_expr = ast.parse(expression, mode='eval')
+                evaluated_result = eval(compile(parsed_expr, filename='<string>', mode='eval'), self.context)
+                return evaluated_result
+            except Exception as e:
+                print(e)
+                return None
 
-        :param template_name: Имя шаблона
-        :return: Готовый шаблон как строка
-        """
+        def replace_for(match):
+            variable_name = match.group(1)
+            iterable_expression = match.group(2)
+            loop_body = match.group(3)
+            print(variable_name, iterable_expression, loop_body)
 
-        raw_template = self._get_template_as_string(template_name)
-        raw_template = self._build_for_block(raw_template=raw_template)
-        raw_template = self._build_if_block(raw_template=raw_template)
+            iterable = evaluate_expression(iterable_expression)
 
-        return self._build_block(raw_template)
+            if iterable is not None and isinstance(iterable, (list, tuple, set, dict)):
+                result = ""
+                for i, item in enumerate(iterable, start=1):
+                    # Генерируем уникальное имя переменной
+                    unique_variable_name = f"{variable_name}{i}"
+
+                    # Добавляем элемент item в контекст под уникальным именем
+                    self.context[unique_variable_name] = item
+
+                    # Рендерим тело цикла
+                    rendered_loop_body = self._render_variables(loop_body)
+
+                    result += rendered_loop_body
+
+                return result
+            else:
+                return ""
+
+        rendered_template = re.sub(pattern, replace_for, template_content, flags=re.DOTALL)
+        return rendered_template
+

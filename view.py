@@ -2,8 +2,9 @@ from datetime import datetime
 from CCDCServer.view import View
 from CCDCServer.request import Request
 from CCDCServer.response import Response
-from CCDCTemplateEngine.build import CCDCTemplateBuild
 from CCDCServer.redirect import Redirect
+from CCDCServer.models import Auth
+import jinja2
 
 
 class HomePage(View):
@@ -11,30 +12,35 @@ class HomePage(View):
         if not request.session_id:
             return Redirect(request, location="/login")
 
-        body = CCDCTemplateBuild().build_template(
-            request,
-            'home.html',
-            {'time': str(datetime.now()), 'lst': [1, 2, 3], 'test': request.session_id}
-        )
-        return Response(request, body=body)
+        template_loader = jinja2.FileSystemLoader(searchpath="templates")
+        jinja_env = jinja2.Environment(loader=template_loader)
+        template = jinja_env.get_template("home.html")
+        context = {'time': str(datetime.now()), 'lst': [1, 2, 3], 'test': request.session_id}
+        html_content = template.render(context)
+        return Response(request, body=html_content)
 
 
 class LoginPage(View):
     def get(self, request: Request, *args, **kwargs) -> Response:
-        body = CCDCTemplateBuild().build_template(
-            request,
-            'login.page.html',
-            {'xcv': 'Auth!', 'age': 15, 'users': [
-                        {'name': 'Иван', 'age': 25},
-                        {'name': 'Мария', 'age': 30},
-                        {'name': 'Петр', 'age': 22},
-                    ]}
-        )
+        template_loader = jinja2.FileSystemLoader(searchpath="templates")
+        jinja_env = jinja2.Environment(loader=template_loader)
+        template = jinja_env.get_template("login.page.html")
+        context = {"error_auth": "Пройдите авторизацию!"}
+        html_content = template.render(context)
 
-        return Response(request, body=body)
+        response = Response(request, body=html_content)
+        return response
 
     def post(self, request: Request, *args, **kwargs) -> Response:
-        pass
+        login = request.POST.get('login', '')[0]
+        password = request.POST.get('password', '')[0]
+        model_auth = Auth(login, password)
+        template_loader = jinja2.FileSystemLoader(searchpath="templates")
+        jinja_env = jinja2.Environment(loader=template_loader)
+        template = jinja_env.get_template("login.page.html")
+        html_content = template.render()
+
+        return Response(request, body=html_content)
 
 
 class EpicMath(View):
@@ -52,15 +58,10 @@ class EpicMath(View):
 
 
 class Hello(View):
-    pass
-    # def get(self, request: Request, *args, **kwargs) -> Response:
-    #     body = build_template(request, {'name': 'undefind'}, 'hello.html')
-    #
-    #     return Response(request, body=body)
-    #
-    # def post(self, request: Request, *args, **kwargs) -> Response:
-    #     raw_name = request.POST.get('answer')
-    #     name = raw_name[0] if raw_name else 'undefind'
-    #     body = build_template(request, {'name': name}, 'hello.html')
-    #
-    #     return Response(request, body=body)
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        template_loader = jinja2.FileSystemLoader(searchpath="templates")
+        jinja_env = jinja2.Environment(loader=template_loader)
+        template = jinja_env.get_template("hello.html")
+        html_content = template.render()
+
+        return Response(request, body=html_content)

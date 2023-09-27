@@ -7,6 +7,7 @@ from CCDCServer.request import Request
 from CCDCServer.response import Response
 from CCDCServer.middleware import BaseMiddleware
 from CCDCServer.storage_environ import EnvironStorage
+from pprint import pprint
 
 
 class CCDCServer:
@@ -42,6 +43,7 @@ class CCDCServer:
         :return: Возвращает тело ответа, которое будет передано пользователю.
         """
 
+        pprint(environ)
         EnvironStorage.set_environ(environ)
         EnvironStorage.set_start_response(start_response)
         view = self._get_view(environ)

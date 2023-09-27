@@ -5,16 +5,7 @@
     <title>Login Page</title>
 </head>
 <body>
-{{ xcv }}
-{% if age != None %}
-<p>{{ age }} != 15</p>
-{% else %}
-<p>{{ age }} = 15</p>
-{% endif %}
-{% for user in users %}
-    {{ user }}
-{% endfor %}
-{{ user1.name }}
+<p>{{ error_auth }}</p>
 <form action="" method="post">
     <p><b>Enter Your Login</b></p>
     <p><input type="text" name="login" placeholder="Login" /></p>
@@ -22,5 +13,6 @@
     <p><input type="password" name="password" placeholder="Password" /></p>
     <p><input type="submit" value="Login"></p>
 </form>
+<a href="/hello">Привет</a>
 </body>
 </html>

@@ -15,19 +15,10 @@ class Request:
         :param settings: Словарь с настройками сервера
         """
 
-        # Создание словаря GET, который будет содержать параметры GET-запроса
         self.build_get_params_dict(environ['QUERY_STRING'])
-
-        # Создание словаря POST, который будет содержать параметры POST-запроса
         self.build_post_params_dict(environ['wsgi.input'].read())
-
-        # Сохранение словаря environ, содержащего информацию о запросе
         self.environ = environ
-
-        # Сохранение словаря с настройками
         self.settings = settings
-
-        # Создание пустого словаря extra, который может использоваться для дополнительных данных
         self.extra = {}
 
     def __getattr__(self, item):

@@ -24,6 +24,7 @@ class SelectQuery:
         self.order_by = kwargs.get("order_by", None)
         self.like_column = kwargs.get("like_column", None)
         self.like_value = kwargs.get("like_value", None)
+        self.params = []
 
     def build_query(self):
         """
@@ -36,7 +37,7 @@ class SelectQuery:
         order_by_str = f" ORDER BY {self.order_by}" if self.order_by else ""
         like_str = ""
 
-        query_params = []
+        query_params = self.params
 
         if self.like_column and self.like_value:
             like_str = f" AND {self.like_column} LIKE %s"

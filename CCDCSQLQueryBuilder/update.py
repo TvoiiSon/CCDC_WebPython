@@ -2,6 +2,7 @@ class UpdateQuery:
     """
     Класс для создания SQL-запроса UPDATE.
     """
+
     def __init__(self, table_name, data, **kwargs):
         """
         Инициализирует объект UpdateQuery.

@@ -3,7 +3,7 @@ from CCDCServer.view import View
 from CCDCServer.request import Request
 from CCDCServer.response import Response
 from CCDCServer.redirect import Redirect
-from CCDCServer.models import Auth
+from CCDCServer.models import Authentication
 import jinja2
 
 
@@ -21,26 +21,58 @@ class HomePage(View):
 
 
 class LoginPage(View):
-    def get(self, request: Request, *args, **kwargs) -> Response:
+    @staticmethod
+    def _load_template():
         template_loader = jinja2.FileSystemLoader(searchpath="templates")
         jinja_env = jinja2.Environment(loader=template_loader)
-        template = jinja_env.get_template("login.page.html")
+        template = jinja_env.get_template("login.html")
         context = {"error_auth": "Пройдите авторизацию!"}
         html_content = template.render(context)
 
-        response = Response(request, body=html_content)
-        return response
+        return html_content
+
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        html_content = self._load_template()
+
+        return Response(request, body=html_content)
 
     def post(self, request: Request, *args, **kwargs) -> Response:
         login = request.POST.get('login', '')[0]
         password = request.POST.get('password', '')[0]
-        model_auth = Auth(login, password)
+        model_auth = Authentication(login, password).auth()
+        if model_auth:
+            return Redirect(request, location="/")
+        else:
+            html_content = self._load_template()
+
+            return Response(request, body=html_content)
+
+
+class RegistrationPage(View):
+    @staticmethod
+    def _load_template():
         template_loader = jinja2.FileSystemLoader(searchpath="templates")
         jinja_env = jinja2.Environment(loader=template_loader)
-        template = jinja_env.get_template("login.page.html")
+        template = jinja_env.get_template("registration.html")
         html_content = template.render()
 
+        return html_content
+
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        html_content = self._load_template()
+
         return Response(request, body=html_content)
+
+    def post(self, request: Request, *args, **kwargs) -> Response:
+        login = request.POST.get('login', '')[0]
+        password = request.POST.get('password', '')[0]
+        model_auth = Authentication(login, password).reg()
+        if model_auth:
+            return Redirect(request, location="/login")
+        else:
+            html_content = self._load_template()
+
+            return Response(request, body=html_content)
 
 
 class EpicMath(View):

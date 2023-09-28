@@ -3,7 +3,7 @@ class DeleteQuery:
     Класс для создания SQL-запросов DELETE.
     """
 
-    def __init__(self, table_name, **kwargs):
+    def __init__(self, table_name: str, **kwargs):
         """
         Инициализирует объект DeleteQuery.
 

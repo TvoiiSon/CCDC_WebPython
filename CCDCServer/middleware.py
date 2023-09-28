@@ -38,37 +38,45 @@ class Session(BaseMiddleware):
     и переопределяет методы to_request и to_response.
     """
 
+    def __init__(self, cookie_name='session_id', cookie_value=None):
+        """
+        Инициализирует объект Session с именем куки и его начальным значением.
+
+        :param cookie_name: Имя куки (по умолчанию 'session_id')
+        :param cookie_value: Начальное значение куки (по умолчанию None)
+        """
+
+        self.cookie_name = cookie_name
+        self.cookie_value = cookie_value or str(uuid4())
+
     def to_request(self, request: Request):
         """
-        Этот метод проверяет наличие куки с именем 'session_id' в HTTP-запросе. Если куки существует,
-        то извлекает значение 'session_id' и сохраняет его в атрибут extra объекта request.
+        Этот метод проверяет наличие куки с заданным именем в HTTP-запросе. Если куки существует,
+        то извлекает его значение и сохраняет его в атрибут extra объекта request.
 
         :param request: Объект запроса (Request)
         """
 
         cookie = request.environ.get('HTTP_COOKIE', None)
-        if not cookie:
-            return
-        session_id = parse_qs(cookie)['session_id'][0]
-        request.extra['session_id'] = session_id
+        if cookie:
+            cookies = parse_qs(cookie)
+            if self.cookie_name in cookies:
+                request.extra[self.cookie_name] = cookies[self.cookie_name][0]
 
     def to_response(self, response: Response):
         """
-        Этот метод проверяет, существует ли атрибут 'session_id' в объекте request. Если атрибут отсутствует,
-        то генерирует новый уникальный 'session_id' с помощью uuid4() и устанавливает его как куки в заголовке
-        ответа 'Set-Cookie'.
+        Этот метод проверяет, существует ли атрибут с именем куки в объекте request. Если атрибут отсутствует,
+        то устанавливает куки с заданным именем и значением в заголовке ответа 'Set-Cookie'.
 
         :param response: Объект ответа (Response)
         """
 
-        if not response.request.extra.get('session_id'):
+        if not response.request.extra.get(self.cookie_name):
             response.update_headers(
-                {'Set-Cookie': f'session_id={uuid4()}'}
+                {'Set-Cookie': f'{self.cookie_name}={self.cookie_value}'}
             )
 
 
-# Список middlewares, который включает в себя только один промежуточный слой - Session.
-# Этот список будет использоваться в вашем Веб-Фреймворке для применения промежуточных слоев к запросам и ответам.
 middlewares = [
     Session
 ]

@@ -16,10 +16,8 @@ class Session:
         :param http_only: Установите True, если куки должны быть доступны только через HTTP (не JavaScript).
         """
 
-        # Создаем строку куки
         cookie = f"{key}={value}"
 
-        # Добавляем опциональные атрибуты
         if expires:
             cookie += f"; expires={expires.strftime('%a, %d %b %Y %H:%M:%S GMT')}"
         if path:
@@ -31,7 +29,6 @@ class Session:
         if http_only:
             cookie += "; HttpOnly"
 
-        # Добавляем куки в заголовки ответа
         self.response.headers['Set-Cookie'] = cookie
 
     def delete_cookie(self, key):
@@ -41,11 +38,9 @@ class Session:
         :param key: Имя куки для удаления.
         """
 
-        # Устанавливаем куки с истекшим сроком действия
         expires = "Thu, 01 Jan 1970 00:00:00 GMT"
         cookie = f"{key}=; expires={expires}; path=/"
 
-        # Добавляем куки в заголовки ответа
         self.response.headers['Set-Cookie'] = cookie
 
     def get_cookie(self, key):
@@ -56,5 +51,4 @@ class Session:
         :return: Значение куки, если оно присутствует в запросе, иначе None.
         """
 
-        # Извлекаем значение куки с заданным именем из запроса
         return self.request.cookies.get(key)

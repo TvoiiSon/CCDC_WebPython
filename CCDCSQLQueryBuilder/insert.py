@@ -11,6 +11,7 @@ class InsertQuery:
         :param table_name: Имя таблицы, в которую будет выполняться вставка данных.
         :param data: Словарь с данными для вставки в виде {имя_колонки: значение}.
         """
+
         if not table_name:
             raise ValueError("Имя таблицы обязательно")
 
@@ -23,6 +24,7 @@ class InsertQuery:
 
         :return: Кортеж, содержащий строку SQL-запроса и список параметров для безопасной вставки значений.
         """
+
         if not self.data:
             raise ValueError("Нет данных для вставки")
 

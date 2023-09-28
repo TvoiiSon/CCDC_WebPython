@@ -15,6 +15,7 @@ class SelectQuery:
             - like_column: Название колонки для операции LIKE (опциональный).
             - like_value: Значение для операции LIKE (опциональный).
         """
+
         if not table_name:
             raise ValueError("Имя таблицы обязательно")
 
@@ -32,6 +33,7 @@ class SelectQuery:
 
         :return: Кортеж, содержащий строку SQL-запроса и список параметров для безопасной вставки значений.
         """
+
         columns_str = ", ".join(self.columns) if self.columns else "*"
         conditions_str = " AND ".join(self.conditions) if self.conditions else ""
         order_by_str = f" ORDER BY {self.order_by}" if self.order_by else ""

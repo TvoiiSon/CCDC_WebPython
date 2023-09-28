@@ -27,5 +27,5 @@ class Redirect(Response):
         super().__init__(request)
         env = EnvironStorage().get_environ()
         loc_env = env['HTTP_HOST']
-        self.status_code = 302  # Код состояния для переадресации (Found)
+        self.status_code = 302
         self.headers['Location'] = f"http://{loc_env}{location}"

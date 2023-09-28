@@ -1,5 +1,4 @@
 import re
-import jinja2
 from typing import List, Type
 from CCDCServer.urls import Url
 from CCDCServer.exceptions import NotFound, NotAllowed
@@ -43,15 +42,19 @@ class CCDCServer:
         :return: Возвращает тело ответа, которое будет передано пользователю.
         """
 
-        EnvironStorage.set_environ(environ)
-        EnvironStorage.set_start_response(start_response)
-        view = self._get_view(environ)
-        request = self._get_request(environ)
-        self._apply_middleware_to_request(request)
-        response = self._get_response(environ, view, request)
-        self._apply_middleware_to_response(response)
-        start_response(str(response.status_code), response.headers.items())
+        try:
+            EnvironStorage.set_environ(environ)
+            EnvironStorage.set_start_response(start_response)
+            view = self._get_view(environ)
+            request = self._get_request(environ)
+            self._apply_middleware_to_request(request)
+            response = self._get_response(environ, view, request)
+        except NotFound:
+            response = self._handle_404(environ)
+        except NotAllowed:
+            response = self._handle_405(environ)
 
+        start_response(str(response.status_code), response.headers.items())
         return iter([response.body])
 
     @staticmethod
@@ -117,13 +120,9 @@ class CCDCServer:
         """
 
         method = environ['REQUEST_METHOD'].lower()
-        #  Функция hasattr проверяет, существует ли атрибут с указанным именем (attr)
-        #  у объекта (obj)
         if not hasattr(view, method):
             raise NotAllowed
 
-        # Функция getattr возвращает значение атрибута с указанным именем (attr)
-        # у объекта (obj)
         return getattr(view, method)(request)
 
     def _apply_middleware_to_request(self, request: Request):
@@ -149,3 +148,29 @@ class CCDCServer:
 
         for i in self.middlewares:
             i().to_response(response)
+
+    @staticmethod
+    def _handle_404(environ: dict, request: Request = None) -> Response:
+        """
+        Метод для обработки страницы 404 (Not Found).
+
+        :param environ: Это словарь, содержащий информацию о текущем запросе.
+        :param request: Объект запроса (Request).
+        :return: Объект Response для страницы 404.
+        """
+
+        response = Response(request, status_code=404, body="404 - Page Not Found")
+        return response
+
+    @staticmethod
+    def _handle_405(environ: dict, request: Request = None) -> Response:
+        """
+        Метод для обработки страницы 405 (Method Not Allowed).
+
+        :param environ: Это словарь, содержащий информацию о текущем запросе.
+        :param request: Объект запроса (Request).
+        :return: Объект Response для страницы 405.
+        """
+
+        response = Response(request, status_code=405, body="405 - Method Not Allowed")
+        return response

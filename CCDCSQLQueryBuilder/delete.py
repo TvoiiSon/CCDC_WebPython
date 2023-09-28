@@ -11,6 +11,7 @@ class DeleteQuery:
         :param kwargs: Дополнительные аргументы.
           - conditions: Список условий для фильтрации строк перед удалением.
         """
+
         if not table_name:
             raise ValueError("Имя таблицы обязательно")
 
@@ -23,6 +24,7 @@ class DeleteQuery:
 
         :return: Строка SQL-запроса DELETE.
         """
+
         conditions_str = " AND ".join(self.conditions) if self.conditions else ""
 
         query = f"DELETE FROM {self.table_name}"

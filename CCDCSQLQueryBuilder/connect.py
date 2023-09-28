@@ -16,6 +16,7 @@ class DB:
         :param password: Пароль пользователя базы данных.
         :param database: Название базы данных.
         """
+
         self.host = host
         self.user = user
         self.password = password
@@ -29,6 +30,7 @@ class DB:
 
         :return: Курсор для выполнения SQL-запросов.
         """
+
         try:
             self.link = mysql.connector.connect(
                 host=self.host,
@@ -46,17 +48,8 @@ class DB:
         """
         Метод для разрыва соединения с базой данных.
         """
+
         if self.cursor:
             self.cursor.close()
         if self.link:
             self.link.close()
-
-
-# db = DB(
-#     host="localhost",
-#     user="root",
-#     password="1234",
-#     database="web_builder"
-# )
-#
-# cursor = db.connect()

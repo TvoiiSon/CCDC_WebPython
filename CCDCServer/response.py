@@ -12,16 +12,15 @@ class Response:
         :param body: Строка, содержащая тело ответа (по умолчанию пустая строка)
         """
 
-        # Установка начальных значений для атрибутов объекта Response
         self.status_code = status_code
         self.headers = {}
         self.body = b''
-        self._set_base_headers()  # Установка базовых HTTP-заголовков
+        self._set_base_headers()
         if headers is not None:
-            self.update_headers(headers)  # Обновление заголовков, если они предоставлены
-        self._set_body(body)  # Установка тела ответа
-        self.request = request  # Связывание с объектом Request
-        self.extra = {}  # Пустой словарь для дополнительных данных
+            self.update_headers(headers)
+        self._set_body(body)
+        self.request = request
+        self.extra = {}
 
     def __getattr__(self, item):
         """

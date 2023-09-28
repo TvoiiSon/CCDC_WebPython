@@ -5,8 +5,9 @@ class DB:
     """
     Класс для подключения к базе данных MySQL.
     """
+    __slots__ = {"host", "user", "password", "database", "link", "cursor"}
 
-    def __init__(self, host, user, password, database):
+    def __init__(self, host: str, user: str, password: str, database: str):
         """
         Конструктор класса DB, инициализирует параметры подключения.
 
@@ -51,11 +52,11 @@ class DB:
             self.link.close()
 
 
-db = DB(
-    host="localhost",
-    user="root",
-    password="1234",
-    database="web_builder"
-)
-
-cursor = db.connect()
+# db = DB(
+#     host="localhost",
+#     user="root",
+#     password="1234",
+#     database="web_builder"
+# )
+#
+# cursor = db.connect()

@@ -2,8 +2,9 @@ class InsertQuery:
     """
     Класс для создания SQL-запросов INSERT.
     """
+    __slots__ = {"table_name", "data"}
 
-    def __init__(self, table_name, data):
+    def __init__(self, table_name: str, data: dict):
         """
         Инициализирует объект InsertQuery.
 
@@ -28,5 +29,5 @@ class InsertQuery:
         columns = ", ".join(self.data.keys())
         values = ", ".join(["%s" for _ in self.data.values()])
         query = f"INSERT INTO {self.table_name} ({columns}) VALUES ({values})"
-        query_params = list(self.data.values())  # Список значений для параметризованного запроса
+        query_params = list(self.data.values())
         return query, query_params

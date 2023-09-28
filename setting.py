@@ -1,6 +1,6 @@
 import os
 from CCDCServer.urls import Url
-from view import HomePage, EpicMath, Hello, LoginPage
+from view import HomePage, LoginPage, RegistrationPage
 
 settings = {
     'BASE_DIR': os.path.dirname(os.path.abspath(__file__)),
@@ -10,6 +10,5 @@ settings = {
 urlpatterns = [
     Url('^$', HomePage),
     Url('^/login$', LoginPage),
-    Url('^/math$', EpicMath),
-    Url('^/hello$', Hello)
+    Url('^/registration$', RegistrationPage),
 ]

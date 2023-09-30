@@ -3,7 +3,6 @@ from CCDCServer.response import Response
 from uuid import uuid4
 from urllib.parse import parse_qs
 
-
 class BaseMiddleware:
     """
     Базовый класс для всех промежуточных слоев. Он определяет два метода: to_request и to_response,
@@ -30,7 +29,6 @@ class BaseMiddleware:
         """
 
         pass
-
 
 class Session(BaseMiddleware):
     """

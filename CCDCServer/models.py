@@ -32,10 +32,10 @@ class Authentication:
         """
 
         select_user = SelectQuery("users", "login", "password")
-        select_user.conditions.append("login = %s")
-        select_user.conditions.append("password = %s")
-        select_user.params.append(self.login)
-        select_user.params.append(self.password)
+        select_user.conditions.append("login = %s")  # Условие для выбора по логину
+        select_user.conditions.append("password = %s")  # Условие для выбора по паролю
+        select_user.params.append(self.login)  # Параметр для логина
+        select_user.params.append(self.password)  # Параметр для пароля
         query, params = select_user.build_query()
         return execute_query(query, params, "fetchone")
 
@@ -68,7 +68,7 @@ class Authentication:
         """
         Регистрирует нового пользователя.
 
-        :return: True, если регистрация успешна (новый пользователь добавлен), иначе False (пользователь уже существует).
+        :return: True, если регистрация успешна (новый пользователь добавлен), иначе False (пользователь уже существует)
         """
 
         res = self._select_user()

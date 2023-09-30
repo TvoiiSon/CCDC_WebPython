@@ -5,7 +5,7 @@ from CCDCServer.storage_environ import EnvironStorage
 
 class Redirect(Response):
     """
-    Класс, представляющий ответ, который должен выполнить переадресацию.
+    Класс, представляющий ответ, который инициирует переадресацию.
 
     :attr status_code (int): Код состояния для переадресации (302 - Found).
     :attr headers (dict): Заголовки ответа, включая "Location" для указания целевого URL.
@@ -18,9 +18,9 @@ class Redirect(Response):
 
     def __init__(self, request: Request, location: str):
         """
-        Инициализация объекта RedirectResponse.
+        Инициализирует объект RedirectResponse.
 
-        :param request (Request): Объект запроса (Request), который будет использоваться в ответе.:
+        :param request (Request): Объект запроса (Request), который будет использоваться в ответе.
         :param location (str): URL, на который нужно выполнить переадресацию.
         """
 

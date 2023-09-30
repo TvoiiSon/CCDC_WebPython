@@ -28,7 +28,6 @@ class LoadTemplate:
 
         :return: Строка, содержащая результат рендеринга шаблона.
         """
-
         template_loader = jinja2.FileSystemLoader(searchpath=self.template_folder)
         jinja_env = jinja2.Environment(loader=template_loader)
         template = jinja_env.get_template(self.template_name)

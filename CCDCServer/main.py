@@ -1,5 +1,6 @@
 import re
 import hashlib
+import tracemalloc
 from datetime import datetime, timedelta
 from typing import List, Type
 from CCDCServer.urls import Url
@@ -33,6 +34,8 @@ class CCDCServer:
         self.settings = settings
         self.middlewares = middlewares
 
+        tracemalloc.start()
+
     def __call__(self, environ: dict, start_response):
         """
         Метод __call__ в Python позволяет сделать экземпляр класса "вызываемым", что означает,
@@ -56,6 +59,9 @@ class CCDCServer:
 
         start_response(str(response.status_code), response.headers.items())
         return iter([response.body])
+
+    def __del__(self):
+        tracemalloc.stop()
 
     @staticmethod
     def _prepare_url(url: str):

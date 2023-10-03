@@ -3,6 +3,7 @@ from CCDCServer.response import Response
 from uuid import uuid4
 from urllib.parse import parse_qs
 
+
 class BaseMiddleware:
     """
     Базовый класс для всех промежуточных слоев. Он определяет два метода: to_request и to_response,
@@ -29,6 +30,7 @@ class BaseMiddleware:
         """
 
         pass
+
 
 class Session(BaseMiddleware):
     """
@@ -70,8 +72,9 @@ class Session(BaseMiddleware):
         """
 
         if not response.request.extra.get(self.cookie_name):
+            max_age = 2_700_000  # примерно месяц
             response.update_headers(
-                {'Set-Cookie': f'{self.cookie_name}={self.cookie_value}'}
+                {'Set-Cookie': f'{self.cookie_name}={self.cookie_value}; Max-Age={max_age}'}
             )
 
 

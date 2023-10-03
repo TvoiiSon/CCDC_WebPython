@@ -2,7 +2,7 @@ from CCDCSQLQueryBuilder.connect import DB
 import mysql.connector
 
 
-def execute_query(query: str, params=None, *args, **kwargs):
+async def execute_query(query: str, params=None, *args):
     """
     Выполняет SQL-запрос с использованием заданного курсора и выполняет дополнительные действия,
     определенные в *args и **kwargs.
@@ -10,14 +10,13 @@ def execute_query(query: str, params=None, *args, **kwargs):
     :param query: Строка SQL-запроса для выполнения.
     :param params: Параметры, передаваемые в SQL-запрос (опционально).
     :param args: Дополнительные позиционные аргументы.
-    :param kwargs: Дополнительные именованные аргументы.
     """
 
     db = DB(
         host="localhost",
         user="root",
         password="1234",
-        database="web_builder"
+        database="builder"
     )
 
     cursor = db.connect()
